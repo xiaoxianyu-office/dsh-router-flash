@@ -1,6 +1,6 @@
 {
   "name": "dsh-router-flash",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "DSH agent preset 分发包：V4 Flash 神模式（opencode-go）——启动时自动把 router-flash preset 安装到 ~/.dsh/.agent-presets。",
   "type": "module",

@@ -101,9 +101,19 @@ export function extractText(data) {
   return content.map((c) => (typeof c === 'string' ? c : (c.text ?? ''))).join(' ')
 }
 
+/**
+ * 会话事件读取：dsh 0.1.5 起 `session.events` 已移除，改用 `session.snapshotEvents()`。
+ * 这里做特性探测，兼容 0.1.2-rc.1 ~ 0.1.5-rc.2 两代宿主。
+ */
+export function sessionEvents(session) {
+  return typeof session.snapshotEvents === 'function'
+    ? session.snapshotEvents()
+    : session.events
+}
+
 /** Per-session mode derived from the first user message（非 Flash 走这里）。 */
 export function sessionMode(session) {
-  const events = session.events
+  const events = sessionEvents(session)
   const userMsg = events.find((e) => e.type === 'user/message')
   return classifyTask(extractText(userMsg?.data))
 }

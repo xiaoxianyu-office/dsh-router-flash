@@ -37,6 +37,9 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
+    # dsh 0.1.5 起 schema 改为 prefix/suffix；旧版（<=0.1.2）只认 text。
+    # 双写同一段文本：schemastery 忽略未声明的键，两代宿主都能挂载。
+    prefix: You are a helpful software engineer assistant.
     text: You are a helpful software engineer assistant.
 
 - id: agent-instructions
@@ -107,12 +110,13 @@
 
 # ── goals ───────────────────────────────────────────────────────────────────
 
-# Only the model-facing tool. The goal SERVICE, its session driver, and the
-# `/goal` command stay on the host plane: the Gateway serves the goal domain as
-# Remote endpoints whose receiver comes from a generated descriptor, so it
-# resolves `goals` on the host and an entry-local realm here would hide it. The
-# registry is keyed by session anyway, so one host instance serves every
-# session. What a preset chooses is whether its agent can call the goal tool.
+# The goal SERVICE and its session driver stay on the host plane, where the
+# Gateway can resolve them. The human command and the model-facing tool
+# register into this preset's scoped layers. (2026-09-16: `command-goal` was
+# absent from the frozen copy, so agents on this preset had no `/goal` command.)
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+
 - id: tool-goal
   name: '@deepseek-ai/dsh-tool-goal'
 
@@ -207,6 +211,7 @@
       config:
         provider: spawn
         toolName: subagent
+        modelSelectionSettings: true
         backgroundMode: continuable
 
     - id: tool-subagent-fork
@@ -262,9 +267,17 @@
     allowParallelInProgress: true
 
 # The `web` service and its search provider stay in the host composition; only
-# the model-facing tool is per-session.
+# the model-facing tool is per-session. (2026-09-16: `fetch` restored to the
+# standard value — the frozen copy shipped with fetching disabled.)
 - id: tool-web
   name: '@deepseek-ai/dsh-tool-web'
   config:
-    fetch: false
+    fetch: true
     searchTimeoutMs: 60000
+
+# Declares final files as deliverables the user can open in their default
+# application. Absent from the frozen copy entirely, so agents on this preset
+# could not hand back a deliverable. (`render_ui` is unrelated: it comes from
+# the genui bundle on the host plane.)
+- id: present
+  name: '@deepseek-ai/dsh-tool-present'
