@@ -90,6 +90,17 @@ dsh plugin --profile web remove dsh-router-flash
 
 **修复方式**：把引导静态合并进 `WEAK_FLASH` persona，避免依赖任何动态注入机制。对固定任务同样有效，且更简单可靠。
 
+### dsh 0.1.5 适配
+
+`0.1.5-rc.1` 起有两处破坏性变更，本 preset 已适配：
+
+1. `@deepseek-ai/dsh-persona` 的配置 schema 由 `text` 拆分为 `prefix` / `suffix` —— 旧写法在挂载时报 `invalid config: $.prefix missing required value`，现已改为 `prefix`。
+2. `session.events` 已移除 —— 读会话事件改用 `session.snapshotEvents()`（否则首轮运行报 `Cannot read properties of undefined (reading 'some')`）。
+
+验证环境：dsh `0.1.5-rc.2` + `opencode-go/deepseek-v4-flash`。切换预设后可正常对话，并实测工具调用（`echo hi-from-router` 由 PowerShell 执行、退出码 0）。
+
+兼容性：persona 双写 `prefix` + `text`（schemastery 忽略未声明键），事件读取用特性探测（`snapshotEvents()` 优先、回退 `session.events`），因此同一份 preset 在 `0.1.2-rc.1` ~ `0.1.5-rc.2` 两代宿主上均可挂载运行。
+
 ## 适用范围
 
 - ✅ 本 preset 专为 **Flash** 设计：命中 `isFlashModel` 后一律走 weak 模式（作者实测 w7 最优解）。
